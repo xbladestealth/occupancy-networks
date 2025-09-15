@@ -21,7 +21,7 @@ class OccupancyNet(nn.Module):
         self.left_bifpn = BiFPN(embed_dim, self.models[self.backbone][2], first_time=True)
         self.right_bifpn = BiFPN(embed_dim, self.models[self.backbone][2], first_time=True)
         self.attn_module = AttentionModule(embed_dim=self.embed_dim, grid_size=self.grid_size)
-        self.deconvnet = DeconvNet(self.embed_dim, num_layers=1)
+        self.deconvnet = DeconvNet(self.embed_dim, num_layers=2)
 
     def forward(self, left_image, right_image):
         # PATCHING AND EMBEDDING

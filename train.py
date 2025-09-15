@@ -74,9 +74,9 @@ for i, path in enumerate(paths):
     output_tensor = output_tensor.float()
 
     # Ensure output_tensor has the correct shape if needed
-    if output_tensor.shape != (1, 32, 32, 32):
+    if output_tensor.shape != (1, 64, 64, 64):
 
-        raise ValueError(f"Expected output tensor shape (1, 32, 32, 32), got {output_tensor.shape}")
+        raise ValueError(f"Expected output tensor shape (1, 64, 64, 64), got {output_tensor.shape}")
 
     image_pairs.append((left_image, right_image))
     output_tensors.append(output_tensor)

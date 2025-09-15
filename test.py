@@ -1,3 +1,4 @@
+import os
 from PIL import Image
 import glob
 import numpy as np
@@ -32,6 +33,9 @@ left_image_root = "blender_stereo_images/left_images/"
 right_image_root = "blender_stereo_images/right_images/"
 paths = glob.glob("blender_stereo_images/occupancy_grids/*.npy")
 
+pred_occupancy_grid_dir = "blender_stereo_images/occupancy_grids/predict/"
+os.makedirs(pred_occupancy_grid_dir, exist_ok=True)
+
 # Image transformation to tensor, resize to match your network's expected input size
 transform = transforms.Compose([
     transforms.Lambda(remove_alpha_channel),
@@ -62,9 +66,9 @@ for i, path in enumerate(paths):
     output_tensor = output_tensor.float()
 
     # Ensure output_tensor has the correct shape if needed
-    if output_tensor.shape != (1, 32, 32, 32):
+    if output_tensor.shape != (1, 64, 64, 64):
 
-        raise ValueError(f"Expected output tensor shape (1, 32, 32, 32), got {output_tensor.shape}")
+        raise ValueError(f"Expected output tensor shape (1, 64, 64, 64), got {output_tensor.shape}")
 
     image_pairs.append((left_image, right_image))
     output_tensors.append(output_tensor)
@@ -77,7 +81,7 @@ model.load_state_dict(torch.load('best.pt', weights_only=True))
 model.to(device)  # Move model to GPU
 model.eval()  # Set the model to evaluation mode
 
-for (left_images, right_images), targets in test_loader:
+for i, ((left_images, right_images), targets) in enumerate(test_loader):
     left_images, right_images, targets = left_images.to(device), right_images.to(device), targets.to(device)
 
     # Predict occupancy map
@@ -95,3 +99,9 @@ for (left_images, right_images), targets in test_loader:
     accuracy = correct_predictions / total_voxels
     
     print(f"Accuracy for this pair: {accuracy:.4f}")
+    
+    # save predicted map as npy file
+    occupancy_grid = occupancy_map.squeeze(0).squeeze(0).int()  # Remove batch and channel dimension
+    print(occupancy_grid.shape)
+
+    np.save(os.path.join(pred_occupancy_grid_dir, f"pred_occupancy_grid_{i}.npy"), occupancy_grid)
